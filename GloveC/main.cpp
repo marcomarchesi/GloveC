@@ -13,6 +13,8 @@
 #include "Math.h"
 #include "GestureRecognizer.h"
 
+#define NUM_OF_SAMPLES 125
+
 
 GTEST_API_ int main(int argc, char **argv) {
     // insert code here...
@@ -20,34 +22,41 @@ GTEST_API_ int main(int argc, char **argv) {
     
     
     GestureRecognizer gestureRecognizer;
-    MatrixDouble realTimeData;
-    Serial::glove_packet glove_data;
-    int realTimeDataIndex = 0;
+    gestureRecognizer.init();
+//    gestureRecognizer.generate_random_set(6, 3);
+    MatrixDouble realTimeData = MatrixDouble(NUM_OF_SAMPLES,6);
     
-    // 1) Open a serial port to get data from the glove controller
-    Serial serialPort;
-    serialPort.init();
-    int glove = serialPort.connect();
-    
-    /* Allocate memory for read buffer */
-    char buffer [21];
-    memset (&buffer, '\0', sizeof buffer);
-    int buffer_index = 0;
-    
-    // 2) on connection
-    while (serialPort.isConnected)
-    {
-        int n = (int)read( glove, &buffer[buffer_index], sizeof(buffer)-buffer_index);
-        buffer_index += n;
-        if(buffer_index == 21){
-            glove_data = serialPort.process_packet((Serial::serial_packet*)buffer);
-            buffer_index = 0;
-        }
-        
-        memcpy(&buffer, &glove_data, sizeof(glove_data));
-        
-//        if(realTimeDataIndex == 99){
-//            for(int i = 0; i<99;++i){
+    gestureRecognizer.train();
+//    Serial::glove_packet glove_data;
+//    int realTimeDataIndex = 0;
+//    
+//    // 1) Open a serial port to get data from the glove controller
+//    Serial serialPort;
+//    serialPort.init();
+//    int glove = serialPort.connect();
+//    
+//    /* Allocate memory for read buffer */
+//    char buffer [21];
+//    memset (&buffer, '\0', sizeof buffer);
+//    int buffer_index = 0;
+//    
+//    // 2) on connection
+//    while (serialPort.isConnected)
+//    {
+//        int n = (int)read( glove, &buffer[buffer_index], sizeof(buffer)-buffer_index);
+//        
+//        
+//        buffer_index += n;
+//        if(buffer_index == 21){
+//            glove_data = serialPort.process_packet((Serial::serial_packet*)buffer);
+//            buffer_index = 0;
+//        }
+//        
+//        
+//        memcpy(&buffer, &glove_data, sizeof(glove_data));
+//        
+//        if(realTimeDataIndex == NUM_OF_SAMPLES-1){
+//            for(int i = 0; i<NUM_OF_SAMPLES-1;++i){
 //                realTimeData[i][0] = realTimeData[i+1][0];
 //                realTimeData[i][1] = realTimeData[i+1][1];
 //                realTimeData[i][2] = realTimeData[i+1][2];
@@ -64,7 +73,7 @@ GTEST_API_ int main(int argc, char **argv) {
 //        realTimeData[realTimeDataIndex][4] = glove_data.gyr_y;
 //        realTimeData[realTimeDataIndex][5] = glove_data.gyr_z;
 //        
-//        if(realTimeDataIndex<99)
+//        if(realTimeDataIndex<NUM_OF_SAMPLES-1)
 //            realTimeDataIndex++;
 //        
 //        //            //Save the real time data
@@ -72,21 +81,17 @@ GTEST_API_ int main(int argc, char **argv) {
 //        //                cout << "Failed to save the classifier model!\n";
 //        //            }
 //        
-//        cout << realTimeData[0][0] << endl;
-        
-//        cout << glove_data.acc_x << endl;
-        /* CLASSIFY THE LAST 100 SAMPLES */
-//        recognizer.classify(realTimeData);
-        
-        
-        /**********************/
-        
-        /* C++ */
-        
-        memset (&buffer, '\0', sizeof buffer);
-    
-    }
-    
+////         CLASSIFY THE LAST 100 SAMPLES 
+//        gestureRecognizer.classify(realTimeData);
+//        
+//        
+//        /**********************/
+//        
+//        /* C++ */
+//        
+//        memset (&buffer, '\0', sizeof buffer);
+//    }
+//    
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

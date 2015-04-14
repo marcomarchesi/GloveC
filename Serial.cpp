@@ -107,7 +107,7 @@ int Serial::connect(){
         return EXIT_FAILURE;
     }else{
         isConnected = true;
-        cout << "Glove connected" << endl;
+        cout << "Written to glove" << endl;
         return glove;
     }
 

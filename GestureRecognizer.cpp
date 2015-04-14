@@ -8,8 +8,9 @@
 
 #include "GestureRecognizer.h"
 
-#define TRIM_THRESHOLD 0.1
-#define TRIM_PERCENTAGE 90
+#define TRIM_THRESHOLD 0.001
+#define TRIM_PERCENTAGE 99.99
+
 
 /* generate a random training set to test the gesture recognizer */
 
@@ -109,6 +110,8 @@ int GestureRecognizer::info(){
 
 int GestureRecognizer::init(){
     
+    dtw.enableNullRejection( true );
+    
     return 0;
 }
 
@@ -153,7 +156,7 @@ int GestureRecognizer::train(){
     
         // I COMMENTED TRIMMING, IT LOOKS LIKE WITHOUT WORKS BETTER
     //Trim the training data for any sections of non-movement at the start or end of the recordings
-//    dtw.enableTrimTrainingData(true,TRIM_THRESHOLD,TRIM_PERCENTAGE);
+    dtw.enableTrimTrainingData(true,TRIM_THRESHOLD,TRIM_PERCENTAGE);
     
     
     
@@ -217,11 +220,14 @@ int GestureRecognizer::classify(MatrixDouble gloveDataMatrix){
     }
     //Get the predicted class label --> read dtw for get it
     GRT::UINT predictedClassLabel = dtw.getPredictedClassLabel();
-    cout << "classified label is " << predictedClassLabel << endl;
-    
     double maximumLikelihood = dtw.getMaximumLikelihood();
-    GRT::VectorDouble classLikelihoods = dtw.getClassLikelihoods();
-    GRT::VectorDouble classDistances = dtw.getClassDistances();
+    if(predictedClassLabel != 0 and maximumLikelihood > 0.65){
+        cout << "classified label is " << predictedClassLabel << endl;
+        cout << "maximum likelihood is " << maximumLikelihood << endl;
+        GRT::VectorDouble classLikelihoods = dtw.getClassLikelihoods();
+        GRT::VectorDouble classDistances = dtw.getClassDistances();
+    }
+
     
     return EXIT_SUCCESS;
 };
