@@ -133,9 +133,9 @@ int Serial::disconnect(){
 Serial::glove_packet Serial::process_packet(Serial::serial_packet* p) {
     
 
-    float _acc_x = p->acc_x + ACC_X_OFFSET *G_FACTOR;
-    float _acc_y = p->acc_y + ACC_Y_OFFSET *G_FACTOR;
-    float _acc_z = p->acc_z + ACC_Z_OFFSET *G_FACTOR;
+    float _acc_x = (p->acc_x + ACC_X_OFFSET) * G_FACTOR;
+    float _acc_y = (p->acc_y + ACC_Y_OFFSET) *G_FACTOR;
+    float _acc_z = (p->acc_z + ACC_Z_OFFSET) *G_FACTOR;
     float _gyr_x = p->gyr_x/GYRO_FACTOR + GYR_X_OFFSET;
     float _gyr_y = p->gyr_y/GYRO_FACTOR + GYR_Y_OFFSET;
     float _gyr_z = p->gyr_z/GYRO_FACTOR + GYR_Z_OFFSET;

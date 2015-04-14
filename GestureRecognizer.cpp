@@ -107,6 +107,11 @@ int GestureRecognizer::info(){
     return EXIT_SUCCESS;
 };
 
+int GestureRecognizer::init(){
+    
+    return 0;
+}
+
 /* initialize the recognizer */
 
 int GestureRecognizer::train(){
