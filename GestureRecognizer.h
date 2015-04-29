@@ -18,11 +18,13 @@ class GestureRecognizer{
     public:
         //Create a new DTW instance, using the default parameters
         DTW dtw;
+        GestureRecognitionPipeline pipeline;
+        MatrixDouble timeseries;
         int init();
         TimeSeriesClassificationData generate_random_set(int dimension,int classes);
         int info();
         int train();
-        int classify(MatrixDouble gloveDataMatrix);
+        int classify(VectorDouble gloveDataMatrix);
 };
 
 #endif /* defined(__GloveRuntime__GestureRecognizer__) */

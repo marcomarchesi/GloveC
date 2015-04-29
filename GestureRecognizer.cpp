@@ -8,12 +8,15 @@
 
 #include "GestureRecognizer.h"
 
-#define TRIM_THRESHOLD 0.001
-#define TRIM_PERCENTAGE 99.99
+#define TRIM_THRESHOLD 0.01
+#define TRIM_PERCENTAGE 90
 
+#define GESTURE_THRESHOLD 0.6
+#define FINGER_THRESHOLD 0.5
 
-/* generate a random training set to test the gesture recognizer */
+using namespace std;
 
+/* GENERATE A RANDOM TRAINING SET */
 TimeSeriesClassificationData GestureRecognizer::generate_random_set(int dimension,int classes){
     //Create a new instance of the TimeSeriesClassificationData
     TimeSeriesClassificationData trainingData;
@@ -73,13 +76,12 @@ TimeSeriesClassificationData GestureRecognizer::generate_random_set(int dimensio
     return EXIT_SUCCESS;
 };
 
-/* get some info */
-
+/* GET SOME INFO */
 int GestureRecognizer::info(){
     
-    TimeSeriesClassificationData trainingData;
+    LabelledTimeSeriesClassificationData trainingData;
     //This can then be loaded later
-    if( !trainingData.loadDatasetFromFile( "TrainingData.txt" ) ){
+    if( !trainingData.loadDatasetFromFile( "TrainingData.grt" ) ){
         cout << "Failed to load dataset from file!\n";
         return EXIT_FAILURE;
     }
@@ -108,29 +110,49 @@ int GestureRecognizer::info(){
     return EXIT_SUCCESS;
 };
 
+/* GESTURRE RECOGNITION PIPELINE INITIALIZATION */
 int GestureRecognizer::init(){
     
-    dtw.enableNullRejection( true );
+    dtw.enableNullRejection( true ); // to solve GESTURE SPOTTING
+//    dtw.setNullRejectionCoeff(1);
+    
+    // TODO check if correct
+//    dtw.enableZNormalization(true); //Nick Gillian says it's not working well with accelerometer data
+//    dtw.setOffsetTimeseriesUsingFirstSample(true);
+    
+    //Load the DTW model from a file
+    if( !pipeline.loadPipelineFromFile("DTWPipeline.grt") ){
+        cout << "Failed to load the classifier model!\n";
+        return EXIT_FAILURE;
+    }
     
     return 0;
 }
 
-/* initialize the recognizer */
-
+/* INITIALIZE THE RECOGNIZER */
 int GestureRecognizer::train(){
     
-    TimeSeriesClassificationData trainingData;
-    dtw.enableNullRejection( true );        // to solve GESTURE SPOTTING
+    LabelledTimeSeriesClassificationData trainingData;
     
     
-    //This can then be loaded later
-    if( !trainingData.loadDatasetFromFile( "TrainingData.txt" ) ){
+    /* load training data */
+    if( !trainingData.loadDatasetFromFile( "TrainingData.grt" ) ){
         cout << "Failed to load dataset from file!\n";
         return EXIT_FAILURE;
     }
+    
+    // I COMMENTED TRIMMING, IT LOOKS LIKE WITHOUT WORKS BETTER
+    //Trim the training data for any sections of non-movement at the start or end of the recordings
+    dtw.enableTrimTrainingData(true,TRIM_THRESHOLD,TRIM_PERCENTAGE);
+    
+    cout << "Training Data loaded" << endl;
+//    trainingData.printStats();
+    
+    
+    
     //If you want to partition the dataset into a training dataset and a test dataset then you can use the partition function
     //A value of 80 means that 80% of the original data will remain in the training dataset and 20% will be returned as the test dataset
-    TimeSeriesClassificationData testData = trainingData.partition( 80 );
+    LabelledTimeSeriesClassificationData testData = trainingData.partition( 80 );
     
     //If you have multiple datasets that you want to merge together then use the merge function
     if( !trainingData.merge( testData ) ){
@@ -151,45 +173,85 @@ int GestureRecognizer::train(){
         TimeSeriesClassificationData foldTestingData = trainingData.getTestFoldData( foldIndex );
     }
     
-    //If need you can clear any training data that you have recorded
-//    trainingData.clear();
-    
-        // I COMMENTED TRIMMING, IT LOOKS LIKE WITHOUT WORKS BETTER
-    //Trim the training data for any sections of non-movement at the start or end of the recordings
-    dtw.enableTrimTrainingData(true,TRIM_THRESHOLD,TRIM_PERCENTAGE);
-    
-    
+    //pipeline can be used only if a classifier has been set
+    pipeline.setClassifier(dtw);
     
     //Train the classifier
-    if( !dtw.train( trainingData ) ){
+    if( !pipeline.train( trainingData ) ){
         cout << "Failed to train classifier!\n";
         return EXIT_FAILURE;
     }
     
     //Save the DTW model to a file
-    if( !dtw.saveModelToFile("DTWModel.txt") ){
+    if( !pipeline.savePipelineToFile("DTWPipeline.grt") ){
         cout << "Failed to save the classifier model!\n";
         return EXIT_FAILURE;
     }
+    
+    
+    
+//    //Test the pipeline using the test data
+//    cout << "Testing model..." << endl;
+//    if( !pipeline.test( testData ) ){
+//        cout << "ERROR: Failed to test the pipeline!\n";
+//        return EXIT_FAILURE;
+//    }
+//    
+//    //Print some stats about the testing
+//    cout << "Test Accuracy: " << pipeline.getTestAccuracy() << endl;
+//    
+//    cout << "Precision: ";
+//    for(UINT k=0; k<pipeline.getNumClassesInModel(); k++){
+//        UINT classLabel = pipeline.getClassLabels()[k];
+//        cout << "\t" << pipeline.getTestPrecision(classLabel);
+//    }cout << endl;
+//    
+//    cout << "Recall: ";
+//    for(UINT k=0; k<pipeline.getNumClassesInModel(); k++){
+//        UINT classLabel = pipeline.getClassLabels()[k];
+//        cout << "\t" << pipeline.getTestRecall(classLabel);
+//    }cout << endl;
+//    
+//    cout << "FMeasure: ";
+//    for(UINT k=0; k<pipeline.getNumClassesInModel(); k++){
+//        UINT classLabel = pipeline.getClassLabels()[k];
+//        cout << "\t" << pipeline.getTestFMeasure(classLabel);
+//    }cout << endl;
+//    
+//    MatrixDouble confusionMatrix = pipeline.getTestConfusionMatrix();
+//    cout << "ConfusionMatrix: \n";
+//    for(UINT i=0; i<confusionMatrix.getNumRows(); i++){
+//        for(UINT j=0; j<confusionMatrix.getNumCols(); j++){
+//            cout << confusionMatrix[i][j] << "\t";
+//        }cout << endl;
+//    }
+    
+//    //Get the current null rejection thresholds from the classifier
+//    VectorDouble thresholds = pipeline.getNullRejectionThresholds();
+//    cout << thresholds[0] << endl;
+//    cout << thresholds[1] << endl;
+//    thresholds[1] = 77;
+//    dtw.setNullRejectionThresholds(thresholds);
+    //Update the thresholds
     
     //Use the test dataset to test the DTW model
     double accuracy = 0;
     for(GRT::UINT i=0; i<testData.getNumSamples(); i++){
         //Get the i'th test sample - this is a timeseries
         GRT::UINT classLabel = testData[i].getClassLabel();
-        GRT::MatrixDouble timeseries = testData[i].getData();
+        GRT::MatrixDouble local_timeseries = testData[i].getData();
         
         //Perform a prediction using the classifier
-        if( !dtw.predict( timeseries ) ){
+        if( !pipeline.predict( local_timeseries ) ){
             cout << "Failed to perform prediction for test sample: " << i <<"\n";
             return EXIT_FAILURE;
         }
         
         //Get the predicted class label
-        GRT::UINT predictedClassLabel = dtw.getPredictedClassLabel();
-        double maximumLikelihood = dtw.getMaximumLikelihood();
-        GRT::VectorDouble classLikelihoods = dtw.getClassLikelihoods();
-        GRT::VectorDouble classDistances = dtw.getClassDistances();
+        GRT::UINT predictedClassLabel = pipeline.getPredictedClassLabel();
+        double maximumLikelihood = pipeline.getMaximumLikelihood();
+        GRT::VectorDouble classLikelihoods = pipeline.getClassLikelihoods();
+        GRT::VectorDouble classDistances = pipeline.getClassDistances();
         
         //Update the accuracy
         if( classLabel == predictedClassLabel ) accuracy++;
@@ -198,35 +260,52 @@ int GestureRecognizer::train(){
     }
     
     cout << "Test Accuracy: " << accuracy/double(testData.getNumSamples())*100.0 << "%" << endl;
+    
+     trainingData.clear();
 
     return EXIT_SUCCESS;
 };
 
 /* classify the data acquired from the glove controller */
 
-int GestureRecognizer::classify(MatrixDouble gloveDataMatrix){
+int GestureRecognizer::classify(VectorDouble gloveDataMatrix){
     
-    //Load the DTW model from a file
-    if( !dtw.loadModelFromFile("DTWModel.txt") ){
-        cout << "Failed to load the classifier model!\n";
-        return EXIT_FAILURE;
-    }
+    
+
     
 //    GRT::MatrixDouble timeseries = gloveData[0].getData();
     //Perform a prediction using the classifier
-    if( !dtw.predict( gloveDataMatrix ) ){
+    if( !pipeline.predict( gloveDataMatrix ) ){
         cout << "Failed to perform prediction for glove sample.\n";
         return EXIT_FAILURE;
     }
     //Get the predicted class label --> read dtw for get it
-    GRT::UINT predictedClassLabel = dtw.getPredictedClassLabel();
-    double maximumLikelihood = dtw.getMaximumLikelihood();
-    if(predictedClassLabel != 0 and maximumLikelihood > 0.65){
-        cout << "classified label is " << predictedClassLabel << endl;
-        cout << "maximum likelihood is " << maximumLikelihood << endl;
-        GRT::VectorDouble classLikelihoods = dtw.getClassLikelihoods();
-        GRT::VectorDouble classDistances = dtw.getClassDistances();
+    GRT::UINT predictedClassLabel = pipeline.getPredictedClassLabel();
+    GRT::VectorDouble classDistances = pipeline.getClassDistances();
+    GRT::VectorDouble classLikelihoods = pipeline.getClassLikelihoods();
+    double maximumLikelihood = pipeline.getMaximumLikelihood();
+    if(predictedClassLabel != 0){
+        switch (predictedClassLabel) {
+            case 1:
+                cout << "MIC" << endl;
+                break;
+            case 2:
+                cout << "SQUARE" <<endl;
+                break;
+            case 3:
+                cout << "TRIANGLE" <<endl;
+                break;
+            case 4:
+                cout << "CIRCLE" <<endl;
+                break;
+            default:
+                break;
+        }
+        
+//      cout << "maximum likelihood is " << maximumLikelihood << endl;
     }
+    
+    cout << classDistances[0] << "," << classDistances[1] << endl;
 
     
     return EXIT_SUCCESS;
