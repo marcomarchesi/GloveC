@@ -74,7 +74,7 @@ int Serial::init(){
     tty.c_cflag     &=  ~CRTSCTS;       // no flow control
     tty.c_lflag     =   0;          // no signaling chars, no echo, no canonical processing
     tty.c_oflag     =   0;                  // no remapping, no delays
-    tty.c_cc[VMIN]      =   21;                  // read doesn't block
+    tty.c_cc[VMIN]      =   73;                  // read doesn't block
     tty.c_cc[VTIME]     =   0;                  // 0.5 seconds read timeout
     
     tty.c_cflag     |=  CREAD;
@@ -142,6 +142,10 @@ Serial::glove_packet Serial::process_packet(Serial::serial_packet* p) {
     float _mag_x = COM_X_SCALE * p->mag_x + COM_X_OFFSET;
     float _mag_y = COM_Y_SCALE * p->mag_y + COM_Y_OFFSET;
     float _mag_z = p->mag_z;
+    float _theta = p->theta;
+    float _rx = p->rx;
+    float _ry = p->ry;
+    float _rz = p->rz;
 
     
     Serial::glove_packet packet;
@@ -154,6 +158,10 @@ Serial::glove_packet Serial::process_packet(Serial::serial_packet* p) {
     packet.mag_x = _mag_x;
     packet.mag_y = _mag_y;
     packet.mag_z = _mag_z;
+    packet.theta = _theta;
+    packet.rx = _rx;
+    packet.ry = _ry;
+    packet.rz = _rz;
     
     return packet;
 };

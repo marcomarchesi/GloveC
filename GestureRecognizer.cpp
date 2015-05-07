@@ -114,7 +114,7 @@ int GestureRecognizer::info(){
 int GestureRecognizer::init(){
     
     dtw.enableNullRejection( true ); // to solve GESTURE SPOTTING
-//    dtw.setNullRejectionCoeff(1);
+//    dtw.setNullRejectionCoeff(3);
     
     // TODO check if correct
 //    dtw.enableZNormalization(true); //Nick Gillian says it's not working well with accelerometer data
@@ -188,50 +188,6 @@ int GestureRecognizer::train(){
         return EXIT_FAILURE;
     }
     
-    
-    
-//    //Test the pipeline using the test data
-//    cout << "Testing model..." << endl;
-//    if( !pipeline.test( testData ) ){
-//        cout << "ERROR: Failed to test the pipeline!\n";
-//        return EXIT_FAILURE;
-//    }
-//    
-//    //Print some stats about the testing
-//    cout << "Test Accuracy: " << pipeline.getTestAccuracy() << endl;
-//    
-//    cout << "Precision: ";
-//    for(UINT k=0; k<pipeline.getNumClassesInModel(); k++){
-//        UINT classLabel = pipeline.getClassLabels()[k];
-//        cout << "\t" << pipeline.getTestPrecision(classLabel);
-//    }cout << endl;
-//    
-//    cout << "Recall: ";
-//    for(UINT k=0; k<pipeline.getNumClassesInModel(); k++){
-//        UINT classLabel = pipeline.getClassLabels()[k];
-//        cout << "\t" << pipeline.getTestRecall(classLabel);
-//    }cout << endl;
-//    
-//    cout << "FMeasure: ";
-//    for(UINT k=0; k<pipeline.getNumClassesInModel(); k++){
-//        UINT classLabel = pipeline.getClassLabels()[k];
-//        cout << "\t" << pipeline.getTestFMeasure(classLabel);
-//    }cout << endl;
-//    
-//    MatrixDouble confusionMatrix = pipeline.getTestConfusionMatrix();
-//    cout << "ConfusionMatrix: \n";
-//    for(UINT i=0; i<confusionMatrix.getNumRows(); i++){
-//        for(UINT j=0; j<confusionMatrix.getNumCols(); j++){
-//            cout << confusionMatrix[i][j] << "\t";
-//        }cout << endl;
-//    }
-    
-//    //Get the current null rejection thresholds from the classifier
-//    VectorDouble thresholds = pipeline.getNullRejectionThresholds();
-//    cout << thresholds[0] << endl;
-//    cout << thresholds[1] << endl;
-//    thresholds[1] = 77;
-//    dtw.setNullRejectionThresholds(thresholds);
     //Update the thresholds
     
     //Use the test dataset to test the DTW model
@@ -261,7 +217,27 @@ int GestureRecognizer::train(){
     
     cout << "Test Accuracy: " << accuracy/double(testData.getNumSamples())*100.0 << "%" << endl;
     
-     trainingData.clear();
+    /* GET MEAN AND STANDARD DEVIATION FROM TRAINING DATA */
+    //You can also get the minimum and maximum ranges of the data
+    vector< MinMax > ranges = trainingData.getRanges();
+    MatrixDouble dataAsMatrix = trainingData.getDataAsMatrixDouble();
+    VectorDouble standardDeviation = dataAsMatrix.getStdDev();
+    VectorDouble mean = dataAsMatrix.getMean();
+    
+    
+    cout << dataAsMatrix[0][0] << endl;
+    
+    cout << standardDeviation[0] << endl;
+    
+//    cout << "The ranges of the dataset are: \n";
+//    for(UINT j=0; j<ranges.size(); j++){
+//        cout << "Dimension: " << j << " Min: " << ranges[j].minValue << " Max: " << ranges[j].maxValue << endl;
+//        cout << "stardard deviation" << j <<  "is" << standardDeviation[j] << endl;
+//        cout << "mean" << j <<  "is" << mean[j] << endl;
+//    }
+
+    
+    trainingData.clear();
 
     return EXIT_SUCCESS;
 };
@@ -298,6 +274,9 @@ int GestureRecognizer::classify(VectorDouble gloveDataMatrix){
             case 4:
                 cout << "CIRCLE" <<endl;
                 break;
+            case 5:
+                cout << "PUNCH" << endl;
+                break;
             default:
                 break;
         }
@@ -305,7 +284,7 @@ int GestureRecognizer::classify(VectorDouble gloveDataMatrix){
 //      cout << "maximum likelihood is " << maximumLikelihood << endl;
     }
     
-    cout << classDistances[0] << "," << classDistances[1] << endl;
+    cout << classDistances[0] << "," << classDistances[1] << "," << classDistances[2] << "," << classDistances[3] << endl;
 
     
     return EXIT_SUCCESS;

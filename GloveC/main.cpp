@@ -27,8 +27,8 @@
 #define STD_GY 1000
 #define STD_GZ 1000
 
-// range of accelerometer is (-16,16)
-// range of gyroscope is (-2000,2000)
+// range of accelerometer is (-16,16) and standard deviation approximated to range/4 = 32/4
+// range of gyroscope is (-2000,2000) and standard deviation approximated to range/4 = 4000/4
 
 
 int main(int argc, char **argv) {
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     int glove = serialPort.connect();
     
     /* Allocate memory for read buffer */
-    char buffer [21];
+    char buffer [73];
     memset (&buffer, '\0', sizeof buffer);
     int buffer_index = 0;
     
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
         
         
         buffer_index += n;
-        if(buffer_index == 21){
+        if(buffer_index == 73){
             glove_data = serialPort.process_packet((Serial::serial_packet*)buffer);
             buffer_index = 0;
         }
@@ -76,9 +76,13 @@ int main(int argc, char **argv) {
         realTimeData[4] = (glove_data.gyr_y - MEAN_GY)/STD_GY;
         realTimeData[5] = (glove_data.gyr_z - MEAN_GZ)/STD_GZ;
         
+        float forward = glove_data.acc_x;
+//        cout << glove_data.acc_x << "," << glove_data.acc_y << "," << glove_data.acc_z << "," << forward << endl;
+        
+        cout << glove_data.gyr_x << endl;
         
 //         CLASSIFY THE LAST 100 SAMPLES 
-        gestureRecognizer.classify(realTimeData);
+//        gestureRecognizer.classify(realTimeData);
         
         
         /**********************/

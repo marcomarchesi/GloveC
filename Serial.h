@@ -29,6 +29,10 @@ class Serial{
             int16_t mag_x;
             int16_t mag_y;
             int16_t mag_z;
+            float theta;
+            float rx;
+            float ry;
+            float rz;
             int8_t chksum;
         };
         struct glove_packet {
@@ -41,6 +45,10 @@ class Serial{
             float mag_x;
             float mag_y;
             float mag_z;
+            float theta;
+            float rx;
+            float ry;
+            float rz;
         };
         /* serial setup */
         int init();
