@@ -20,15 +20,15 @@ class Serial{
     public:
         struct serial_packet{
             int16_t header;
-            int16_t acc_x;
-            int16_t acc_y;
-            int16_t acc_z;
-            int16_t gyr_x;
-            int16_t gyr_y;
-            int16_t gyr_z;
-            int16_t mag_x;
-            int16_t mag_y;
-            int16_t mag_z;
+            float acc_x;
+            float acc_y;
+            float acc_z;
+            float gyr_x;
+            float gyr_y;
+            float gyr_z;
+            float mag_x;
+            float mag_y;
+            float mag_z;
             float theta;
             float rx;
             float ry;
@@ -61,7 +61,6 @@ class Serial{
         bool isConnected;
     private:
         /* VARIABLES */
-        /* 18 bytes glove data structure */
         /* glove serial port handler */
         int glove;
         /* connection status */

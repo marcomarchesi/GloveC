@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     int glove = serialPort.connect();
     
     /* Allocate memory for read buffer */
-    char buffer [73];
+    char buffer [55];
     memset (&buffer, '\0', sizeof buffer);
     int buffer_index = 0;
     
@@ -59,15 +59,20 @@ int main(int argc, char **argv) {
     {
         int n = (int)read( glove, &buffer[buffer_index], sizeof(buffer)-buffer_index);
         
+        cout << n << endl;
         
         buffer_index += n;
-        if(buffer_index == 73){
+        if(buffer_index == 55){
             glove_data = serialPort.process_packet((Serial::serial_packet*)buffer);
             buffer_index = 0;
         }
         
         
         memcpy(&buffer, &glove_data, sizeof(glove_data));
+        
+        cout << "acc_z:" << glove_data.acc_z << endl;
+        
+        Math::update(&glove_data);
         
         realTimeData[0] = (glove_data.acc_x - MEAN_X)/STD_X;
         realTimeData[1] = (glove_data.acc_y - MEAN_Y)/STD_Y;
@@ -76,10 +81,7 @@ int main(int argc, char **argv) {
         realTimeData[4] = (glove_data.gyr_y - MEAN_GY)/STD_GY;
         realTimeData[5] = (glove_data.gyr_z - MEAN_GZ)/STD_GZ;
         
-        float forward = glove_data.acc_x;
-//        cout << glove_data.acc_x << "," << glove_data.acc_y << "," << glove_data.acc_z << "," << forward << endl;
-        
-        cout << glove_data.gyr_x << endl;
+
         
 //         CLASSIFY THE LAST 100 SAMPLES 
 //        gestureRecognizer.classify(realTimeData);

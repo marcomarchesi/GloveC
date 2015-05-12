@@ -22,18 +22,19 @@
 #define STOP_COMMAND    "\x01\x02\x00\x03"
 #define TERM_SPEED      B115200
 
-#define G_FACTOR        0.00390625
-#define GYRO_FACTOR     14.375
-#define ACC_X_OFFSET    -17.948
-#define ACC_Y_OFFSET    -12.820
-#define ACC_Z_OFFSET    38.46
-#define GYR_X_OFFSET    -0.63
-#define GYR_Y_OFFSET    1.81
-#define GYR_Z_OFFSET    0.07
-#define COM_X_OFFSET    24.575
-#define COM_Y_OFFSET    -39.663
-#define COM_X_SCALE     0.983
-#define COM_Y_SCALE     1.017
+/* DEPRECATED */
+//#define G_FACTOR        0.00390625
+//#define GYRO_FACTOR     14.375
+//#define ACC_X_OFFSET    -17.948
+//#define ACC_Y_OFFSET    -12.820
+//#define ACC_Z_OFFSET    38.46
+//#define GYR_X_OFFSET    -0.63
+//#define GYR_Y_OFFSET    1.81
+//#define GYR_Z_OFFSET    0.07
+//#define COM_X_OFFSET    24.575
+//#define COM_Y_OFFSET    -39.663
+//#define COM_X_SCALE     0.983
+//#define COM_Y_SCALE     1.017
 
  
 using namespace std;
@@ -43,7 +44,7 @@ int Serial::init(){
     
     isConnected = false;
     
-    glove = open(BT_DEVICE_PORT, O_RDWR | O_NOCTTY);
+    glove = open(USB_DEVICE_PORT, O_RDWR | O_NOCTTY);
     /* Error Handling */
     if ( glove < 0 )
     {
@@ -74,7 +75,7 @@ int Serial::init(){
     tty.c_cflag     &=  ~CRTSCTS;       // no flow control
     tty.c_lflag     =   0;          // no signaling chars, no echo, no canonical processing
     tty.c_oflag     =   0;                  // no remapping, no delays
-    tty.c_cc[VMIN]      =   73;                  // read doesn't block
+    tty.c_cc[VMIN]      =   55;                  // read doesn't block
     tty.c_cc[VTIME]     =   0;                  // 0.5 seconds read timeout
     
     tty.c_cflag     |=  CREAD;
@@ -133,14 +134,14 @@ int Serial::disconnect(){
 Serial::glove_packet Serial::process_packet(Serial::serial_packet* p) {
     
 
-    float _acc_x = (p->acc_x + ACC_X_OFFSET) * G_FACTOR;
-    float _acc_y = (p->acc_y + ACC_Y_OFFSET) *G_FACTOR;
-    float _acc_z = (p->acc_z + ACC_Z_OFFSET) *G_FACTOR;
-    float _gyr_x = p->gyr_x/GYRO_FACTOR + GYR_X_OFFSET;
-    float _gyr_y = p->gyr_y/GYRO_FACTOR + GYR_Y_OFFSET;
-    float _gyr_z = p->gyr_z/GYRO_FACTOR + GYR_Z_OFFSET;
-    float _mag_x = COM_X_SCALE * p->mag_x + COM_X_OFFSET;
-    float _mag_y = COM_Y_SCALE * p->mag_y + COM_Y_OFFSET;
+    float _acc_x = p->acc_x;
+    float _acc_y = p->acc_y;
+    float _acc_z = p->acc_z;
+    float _gyr_x = p->gyr_x;
+    float _gyr_y = p->gyr_y;
+    float _gyr_z = p->gyr_z;
+    float _mag_x = p->mag_x;
+    float _mag_y = p->mag_y;
     float _mag_z = p->mag_z;
     float _theta = p->theta;
     float _rx = p->rx;
@@ -149,6 +150,19 @@ Serial::glove_packet Serial::process_packet(Serial::serial_packet* p) {
 
     
     Serial::glove_packet packet;
+    
+//    int8_t buffer[4];
+//    int8_t *ptr = (int8_t*)&_acc_z;
+//    int i;
+//    for (i=3;i>=0;i--){
+//        buffer[i] = ptr[3-i];
+//    }
+//    
+//    float *ptr2 = (float*)buffer;
+//    
+//    packet.acc_z = *ptr2;
+    
+    
     packet.acc_x = _acc_x;
     packet.acc_y = _acc_y;
     packet.acc_z = _acc_z;
