@@ -18,8 +18,12 @@
 #include <iostream>
 class Serial{
     public:
+    
+        typedef uint8_t BYTE;
+    
         struct serial_packet{
-            int16_t header;
+            BYTE header_1;
+            BYTE header_2;
             float acc_x;
             float acc_y;
             float acc_z;
@@ -33,7 +37,7 @@ class Serial{
             float rx;
             float ry;
             float rz;
-            int8_t chksum;
+            BYTE end;
         };
         struct glove_packet {
             float acc_x;

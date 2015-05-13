@@ -15,35 +15,41 @@
 #include <termios.h>  // POSIX terminal control definitions
 #include <string.h>   // String function definitions
 #include <iostream>
+#include <math.h>
 
-#define BT_DEVICE_PORT     "/dev/cu.AmpedUp-AMP-SPP"
+#define BT_DEVICE_PORT  "/dev/cu.Glove-AMP-SPP"
 #define USB_DEVICE_PORT "/dev/cu.usbserial-DA00RAK6"
 #define START_COMMAND   "\x01\x02\x01\x03"
 #define STOP_COMMAND    "\x01\x02\x00\x03"
-#define TERM_SPEED      B115200
-
-/* DEPRECATED */
-//#define G_FACTOR        0.00390625
-//#define GYRO_FACTOR     14.375
-//#define ACC_X_OFFSET    -17.948
-//#define ACC_Y_OFFSET    -12.820
-//#define ACC_Z_OFFSET    38.46
-//#define GYR_X_OFFSET    -0.63
-//#define GYR_Y_OFFSET    1.81
-//#define GYR_Z_OFFSET    0.07
-//#define COM_X_OFFSET    24.575
-//#define COM_Y_OFFSET    -39.663
-//#define COM_X_SCALE     0.983
-//#define COM_Y_SCALE     1.017
-
+#define TERM_SPEED      B57600
+#define PACKET_SIZE     55
  
 using namespace std;
+
+
+
+float reverseFloat( const float inFloat )
+{
+    float retVal;
+    Serial::BYTE *floatToConvert = ( Serial::BYTE* ) & inFloat;
+    Serial::BYTE *returnFloat = ( Serial::BYTE* ) & retVal;
+    
+    // swap the bytes into a temporary buffer //VERIFY
+    returnFloat[0] = floatToConvert[2];
+    returnFloat[1] = floatToConvert[3];
+    returnFloat[2] = floatToConvert[0];
+    returnFloat[3] = floatToConvert[1];
+    
+    return retVal;
+    
+//    return inFloat;
+}
 
 
 int Serial::init(){
     
     isConnected = false;
-    
+
     glove = open(USB_DEVICE_PORT, O_RDWR | O_NOCTTY);
     /* Error Handling */
     if ( glove < 0 )
@@ -75,7 +81,7 @@ int Serial::init(){
     tty.c_cflag     &=  ~CRTSCTS;       // no flow control
     tty.c_lflag     =   0;          // no signaling chars, no echo, no canonical processing
     tty.c_oflag     =   0;                  // no remapping, no delays
-    tty.c_cc[VMIN]      =   55;                  // read doesn't block
+    tty.c_cc[VMIN]      =   PACKET_SIZE;                  // read doesn't block
     tty.c_cc[VTIME]     =   0;                  // 0.5 seconds read timeout
     
     tty.c_cflag     |=  CREAD;
@@ -133,49 +139,43 @@ int Serial::disconnect(){
 
 Serial::glove_packet Serial::process_packet(Serial::serial_packet* p) {
     
-
-    float _acc_x = p->acc_x;
-    float _acc_y = p->acc_y;
-    float _acc_z = p->acc_z;
-    float _gyr_x = p->gyr_x;
-    float _gyr_y = p->gyr_y;
-    float _gyr_z = p->gyr_z;
-    float _mag_x = p->mag_x;
-    float _mag_y = p->mag_y;
-    float _mag_z = p->mag_z;
-    float _theta = p->theta;
-    float _rx = p->rx;
-    float _ry = p->ry;
-    float _rz = p->rz;
-
-    
+//    printf (" %i %i %i\n",(int)p->header_1,(int)p->header_2,(int)p->end);
     Serial::glove_packet packet;
     
-//    int8_t buffer[4];
-//    int8_t *ptr = (int8_t*)&_acc_z;
-//    int i;
-//    for (i=3;i>=0;i--){
-//        buffer[i] = ptr[3-i];
+    packet.acc_x = reverseFloat(p->acc_x);
+    packet.acc_y = reverseFloat(p->acc_y);
+    packet.acc_z = reverseFloat(p->acc_z);
+    packet.gyr_x = reverseFloat(p->gyr_x);
+    packet.gyr_y = reverseFloat(p->gyr_y);
+    packet.gyr_z = reverseFloat(p->gyr_z);
+    packet.mag_x = reverseFloat(p->mag_x);
+    packet.mag_y = reverseFloat(p->mag_y);
+    packet.mag_z = reverseFloat(p->mag_z);
+    packet.theta = reverseFloat(p->theta);
+    packet.rx = reverseFloat(p->rx);
+    packet.ry = reverseFloat(p->ry);
+    packet.rz = reverseFloat(p->rz);
+    
+//    char *ptr = (char*)p;
+//    
+//    for(int i=0;i<55;i++){
+//        printf ("%x",ptr+i);
 //    }
+//    printf("\n");
+
 //    
-//    float *ptr2 = (float*)buffer;
+//        union float_thing{
+//            float a;
+//            unsigned char bytes[4];
+//        };
 //    
-//    packet.acc_z = *ptr2;
+//        float_thing thing;
+//        thing.a = packet.acc_x;
+//        printf ("float is %02x %02x %02x %02x\n",thing.bytes[0],thing.bytes[1],thing.bytes[2],thing.bytes[3]);
     
+//    cout << packet.acc_z << endl;
     
-    packet.acc_x = _acc_x;
-    packet.acc_y = _acc_y;
-    packet.acc_z = _acc_z;
-    packet.gyr_x = _gyr_x;
-    packet.gyr_y = _gyr_y;
-    packet.gyr_z = _gyr_z;
-    packet.mag_x = _mag_x;
-    packet.mag_y = _mag_y;
-    packet.mag_z = _mag_z;
-    packet.theta = _theta;
-    packet.rx = _rx;
-    packet.ry = _ry;
-    packet.rz = _rz;
+//    printf("acc_z: %2.4f\n",packet.theta);
     
     return packet;
 };

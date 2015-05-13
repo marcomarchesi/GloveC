@@ -15,20 +15,19 @@
 
 namespace Math {
     
-    float q1,q2,q3,q4;
+    float q0,q1,q2,q3;
     
-    /* functions for getting rotation angles */
-    /* ROLL */
+    
     float getRoll(){
-        return q1 * q2;
+        return atan2(q0 * q1 + q2 * q3,0.5 - (q1 * q1 + q2 * q2));
     };
-    /* PITCH */
+    //
     float getPitch(){
-        return q1 * q3;
+        return asin(-2*(q1*q3 - q0*q2));
     };
-    /* YAW */
+    //
     float getYaw(){
-        return q1 * q4;
+        return atan2(q0 * q3 + q1 * q2, 0.5 - (q2 * q2 + q3 * q3));
     };
     
     /* MATH UTILS */
@@ -36,11 +35,12 @@ namespace Math {
         return degree*(M_PI/180);
     };
     
-    void update(Serial::glove_packet* data){
-        q1 = data->theta;
-        q2 = data->rx;
-        q3 = data->ry;
-        q4 = data->rz;
+    void update(float theta, float rx, float ry, float rz){
+        
+        q0 = rx * sin(theta/2);
+        q1 = ry * sin(theta/2);
+        q2 = rz * sin(theta/2);
+        q3 = cos(theta/2);
         
     };
     
