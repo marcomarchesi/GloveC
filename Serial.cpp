@@ -21,6 +21,7 @@
 #define USB_DEVICE_PORT "/dev/cu.usbserial-DA00RAK6"
 #define START_COMMAND   "\x01\x02\x01\x03"
 #define STOP_COMMAND    "\x01\x02\x00\x03"
+
 #define TERM_SPEED      B57600
 #define PACKET_SIZE     55
  
@@ -40,6 +41,7 @@ float reverseFloat( const float inFloat )
     returnFloat[2] = floatToConvert[0];
     returnFloat[3] = floatToConvert[1];
     
+    
     return retVal;
     
 //    return inFloat;
@@ -50,7 +52,7 @@ int Serial::init(){
     
     isConnected = false;
 
-    glove = open(USB_DEVICE_PORT, O_RDWR | O_NOCTTY);
+    glove = open(BT_DEVICE_PORT, O_RDWR | O_NOCTTY);
     /* Error Handling */
     if ( glove < 0 )
     {
@@ -114,7 +116,7 @@ int Serial::connect(){
         return EXIT_FAILURE;
     }else{
         isConnected = true;
-        cout << "Written to glove" << endl;
+        cout << "Glove is ready" << endl;
         return glove;
     }
 
@@ -128,18 +130,18 @@ int Serial::disconnect(){
     if(!n_written)
     {
         isConnected = true;
-        cout << "Error " << errno << " opening " << BT_DEVICE_PORT << ": " << strerror (errno) << endl;
+        cout << "Error " << errno << " closing " << BT_DEVICE_PORT << ": " << strerror (errno) << endl;
         return EXIT_FAILURE;
     }else{
         isConnected = false;
-        return EXIT_SUCCESS;;
+        cout << "Glove has been disconnected" << endl;
+        return EXIT_SUCCESS;
     }
     
 };
 
 Serial::glove_packet Serial::process_packet(Serial::serial_packet* p) {
     
-//    printf (" %i %i %i\n",(int)p->header_1,(int)p->header_2,(int)p->end);
     Serial::glove_packet packet;
     
     packet.acc_x = reverseFloat(p->acc_x);
@@ -155,27 +157,6 @@ Serial::glove_packet Serial::process_packet(Serial::serial_packet* p) {
     packet.rx = reverseFloat(p->rx);
     packet.ry = reverseFloat(p->ry);
     packet.rz = reverseFloat(p->rz);
-    
-//    char *ptr = (char*)p;
-//    
-//    for(int i=0;i<55;i++){
-//        printf ("%x",ptr+i);
-//    }
-//    printf("\n");
-
-//    
-//        union float_thing{
-//            float a;
-//            unsigned char bytes[4];
-//        };
-//    
-//        float_thing thing;
-//        thing.a = packet.acc_x;
-//        printf ("float is %02x %02x %02x %02x\n",thing.bytes[0],thing.bytes[1],thing.bytes[2],thing.bytes[3]);
-    
-//    cout << packet.acc_z << endl;
-    
-//    printf("acc_z: %2.4f\n",packet.theta);
     
     return packet;
 };

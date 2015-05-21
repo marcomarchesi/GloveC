@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>166A2968-2128-433B-8D14-4713FC9303A6</string>
+	<key>IDESourceControlProjectName</key>
+	<string>project</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>619EE6C6AEC33E3F892536053D611F140F0F3326</key>
+		<string>https://github.com/marcomarchesi/GloveC.git</string>
+		<key>CC182281C6D964B9331E36C0CD377F4A30240DEA</key>
+		<string>https://github.com/nickgillian/grt.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>GloveC.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>619EE6C6AEC33E3F892536053D611F140F0F3326</key>
+		<string>../..</string>
+		<key>CC182281C6D964B9331E36C0CD377F4A30240DEA</key>
+		<string>../../../grt</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/marcomarchesi/GloveC.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>619EE6C6AEC33E3F892536053D611F140F0F3326</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>619EE6C6AEC33E3F892536053D611F140F0F3326</string>
+			<key>IDESourceControlWCCName</key>
+			<string>GloveC</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>CC182281C6D964B9331E36C0CD377F4A30240DEA</string>
+			<key>IDESourceControlWCCName</key>
+			<string>grt</string>
+		</dict>
+	</array>
+</dict>
+</plist>
